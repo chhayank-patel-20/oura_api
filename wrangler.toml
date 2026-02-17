@@ -1,0 +1,12 @@
+name = "ouraphythonapi"
+main = "main.py"
+compatibility_date = "2024-03-29"
+
+# Use the Python workers beta compatibility flag if needed, 
+# although recent compatibility dates handle it automatically.
+
+[vars]
+# DO NOT COMMIT SECRETS HERE. 
+# Use 'wrangler secret put OURA_CLIENT_SECRET' for sensitive values.
+OURA_CLIENT_ID = "replace_with_client_id_or_use_secrets"
+OURA_REDIRECT_URI = "https://ouraphythonapi.<your-subdomain>.workers.dev/auth/callback"
