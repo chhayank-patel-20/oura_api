@@ -61,17 +61,19 @@ def terms():
 # --- Authentication ---
 
 @app.get("/auth/login")
-
 def login():
     """Redirects user to Oura OAuth2 authorization page."""
     if not CLIENT_ID:
         raise HTTPException(status_code=500, detail="OURA_CLIENT_ID not set in .env")
     
+    # Scopes from Oura Developer Portal example
     auth_url = (
         f"https://cloud.ouraring.com/oauth/authorize"
         f"?response_type=code&client_id={CLIENT_ID}&redirect_uri={REDIRECT_URI}&state=random_state_string"
+        f"&scope=email+personal+daily+heartrate+tag+workout+session+spo2+ring_configuration+stress+heart_health"
     )
     return RedirectResponse(auth_url)
+
 
 @app.get("/auth/callback")
 def callback(code: str, state: str = None):
