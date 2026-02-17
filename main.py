@@ -17,6 +17,17 @@ BASE_URL = "https://api.ouraring.com/v2/sandbox" if SANDBOX_MODE else "https://a
 
 app = FastAPI(title="Oura API Test", description="FastAPI backend to test Oura Ring API integration")
 
+# Add CORS Middleware
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
+
 
 # Logger setup
 logging.basicConfig(level=logging.INFO)
@@ -134,6 +145,11 @@ def get_readiness_data(start_date: str = "2023-01-01", end_date: str = "2024-01-
 
 # --- Webhooks ---
 
+# In-memory storage for recent webhooks (Ephemeral on serverless)
+recent_webhooks = []
+
+from datetime import datetime
+
 @app.post("/webhook")
 async def webhook_listener(request: Request):
     """Endpoint to receive webhook events from Oura."""
@@ -141,13 +157,24 @@ async def webhook_listener(request: Request):
         payload = await request.json()
         logger.info(f"Webhook received: {payload}")
         
-        # Verify signature if necessary (Oura sends signature in headers)
-        # signature = request.headers.get("x-oura-signature")
+        # Store for viewing in UI
+        recent_webhooks.append({
+            "received_at": datetime.now().isoformat(),
+            "payload": payload
+        })
+        # Keep only last 10
+        if len(recent_webhooks) > 10:
+            recent_webhooks.pop(0)
         
         return {"status": "received", "payload": payload}
     except Exception as e:
         logger.error(f"Error processing webhook: {e}")
         raise HTTPException(status_code=500, detail="Error processing webhook")
+
+@app.get("/webhooks/recent")
+def get_recent_webhooks():
+    """View the last 10 webhooks received by this instance."""
+    return recent_webhooks
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
