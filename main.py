@@ -37,9 +37,20 @@ def home():
         ]
     }
 
+@app.get("/privacy")
+def privacy():
+    """Privacy Policy placeholder."""
+    return {"message": "This is a test application. No real user data is shared or sold."}
+
+@app.get("/terms")
+def terms():
+    """Terms of Service placeholder."""
+    return {"message": "This is a test application for personal use only."}
+
 # --- Authentication ---
 
 @app.get("/auth/login")
+
 def login():
     """Redirects user to Oura OAuth2 authorization page."""
     if not CLIENT_ID:
